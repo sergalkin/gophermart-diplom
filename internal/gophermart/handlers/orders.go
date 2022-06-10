@@ -56,8 +56,6 @@ func (o *ordersHandler) Post() gin.HandlerFunc {
 		ctx.Data(http.StatusAccepted, "text/plain", []byte("order accepted"))
 
 		go o.accrual(login, order)
-
-		return
 	}
 }
 
@@ -81,7 +79,6 @@ func (o *ordersHandler) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, orders)
-		return
 	}
 }
 
