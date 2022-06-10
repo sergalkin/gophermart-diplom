@@ -7,6 +7,10 @@ type Storage interface {
 	GetUserByName(login string) (models.User, error)
 	CreateOrder(login, order string) error
 	GetOrders(login string) ([]models.Order, error)
+	GetBalance(login string) (models.Balance, error)
+	Withdraw(sum float32, login, order string) error
+	UpdateBalance(login string, accrual float32) error
+	GetWithdrawals(login string) ([]models.Withdraw, error)
 }
 
 func NewStorage() Storage {

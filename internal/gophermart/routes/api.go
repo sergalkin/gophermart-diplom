@@ -38,6 +38,14 @@ func (a *apiRoutes) Setup() {
 				orders.POST("/", ordersHandler.Post(), middleware.TextPlainConcern())
 				orders.GET("/", ordersHandler.Get())
 			}
+
+			balance := user.Group("/balance", middleware.AuthConcern())
+			{
+				balanceHandler := handlers.NewBalanceHandler(service.NewBalanceService(a.storage))
+				balance.GET("/", balanceHandler.Check())
+				balance.POST("/withdraw", balanceHandler.Withdraw(), middleware.JSONConcern())
+				balance.GET("/withdrawals", balanceHandler.Withdrawals())
+			}
 		}
 	}
 }

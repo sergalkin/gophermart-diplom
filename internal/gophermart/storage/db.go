@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"errors"
+	"math"
 	"sync"
 	"time"
 
@@ -22,10 +23,15 @@ var (
 )
 
 const (
-	createUser  = `INSERT INTO public.users ("name", "password") VALUES ($1,$2)`
-	getUser     = `SELECT * from public.users where "name" = $1`
-	createOrder = `INSERT INTO public.orders ("order","name","uploaded_at") VALUES ($1,$2,$3)`
-	getOrders   = `SELECT "order", "status", "accrual", "uploaded_at" from public.orders where "name" = $1 ORDER BY "uploaded_at" DESC`
+	createUser        = `INSERT INTO public.users ("name", "password") VALUES ($1,$2)`
+	getUser           = `SELECT * from public.users where "name" = $1`
+	createOrder       = `INSERT INTO public.orders ("order","name","uploaded_at") VALUES ($1,$2,$3)`
+	getOrders         = `SELECT "order", "status", "accrual", "uploaded_at" from public.orders where "name" = $1 ORDER BY "uploaded_at" DESC`
+	getBalance        = `SELECT "balance", "withdraw" FROM public.balance where "name" = $1`
+	makeWithdrawal    = `INSERT INTO public.withdrawals ("name", "order", "processed_at", "withdraw")  VALUES ($1,$2,$3,$4)`
+	updateBalance     = `UPDATE public.balance SET balance=$1, withdraw=$2 WHERE "name" = $3`
+	createUserBalance = `INSERT INTO public.balance ("name") VALUES ($1)`
+	getWithdrawals    = `SELECT "order", "withdraw", "processed_at" FROM public.withdrawals WHERE "name" = $1 ORDER BY "processed_at" DESC`
 )
 
 type database struct {
@@ -58,6 +64,10 @@ func (d *database) CreateUser(l, p string) error {
 			return utils.ErrUserAlreadyExists
 		}
 
+		return err
+	}
+
+	if _, err = d.conn.Exec(context.Background(), createUserBalance, l); err != nil {
 		return err
 	}
 
@@ -106,4 +116,77 @@ func (d *database) GetOrders(login string) ([]models.Order, error) {
 	}
 
 	return orders, nil
+}
+
+func (d *database) GetBalance(l string) (models.Balance, error) {
+	balance := models.Balance{}
+
+	err := d.conn.QueryRow(context.Background(), getBalance, l).Scan(&balance.Balance, &balance.Withdraws)
+	if err != nil {
+		return balance, err
+	}
+
+	return balance, nil
+}
+
+func (d *database) Withdraw(sum float32, l, order string) error {
+	sum = sum * -1
+	err := d.UpdateBalance(l, sum)
+	if err != nil {
+		return err
+	}
+
+	_, err = d.conn.Exec(context.Background(), makeWithdrawal, l, order, time.Now(), float32(math.Abs(float64(sum))))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *database) UpdateBalance(l string, accrual float32) error {
+	balance, err := d.GetBalance(l)
+	if err != nil {
+		return err
+	}
+
+	balance.Balance += accrual
+	if balance.Balance < 0 {
+		return utils.ErrNegativeBalance
+	}
+
+	if accrual < 0 {
+		balance.Withdraws += float32(math.Abs(float64(accrual)))
+	}
+
+	_, err = d.conn.Exec(context.Background(), updateBalance, balance.Balance, balance.Withdraws, l)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *database) GetWithdrawals(l string) ([]models.Withdraw, error) {
+	withdrawals := make([]models.Withdraw, 0)
+	rows, err := d.conn.Query(context.Background(), getWithdrawals, l)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		withdraw := models.Withdraw{}
+
+		err = rows.Scan(&withdraw.Number, &withdraw.Withdraw, &withdraw.Processed)
+		if err != nil {
+			return nil, err
+		}
+
+		if withdraw.Withdraw > 0 {
+			withdrawals = append(withdrawals, withdraw)
+		}
+	}
+
+	return withdrawals, nil
 }

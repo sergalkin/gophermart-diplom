@@ -17,6 +17,8 @@ var (
 	ErrOrderAlreadyCreatedByOtherUser = errors.New("order already created by another user")
 	ErrOrderUniqueViolation           = errors.New("order already created")
 	ErrOrdersNotFound                 = errors.New("orders not found")
+	ErrNegativeBalance                = errors.New("not enough balance to proceed")
+	ErrEmptyRow                       = errors.New("no record found")
 )
 
 type responseError struct {
