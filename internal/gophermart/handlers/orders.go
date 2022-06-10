@@ -142,6 +142,9 @@ func (o *ordersHandler) accrual(login, order string) {
 		if err != nil {
 			config.Logger().Error("error in unmarshaling")
 		}
+		if accrual.Status == "INVALID" || accrual.Status == "PROCESSED" {
+			wait = true
+		}
 
 		if (accrual.Status == "REGISTERED" || accrual.Status == "PROCESSING") && accrual.Status != status {
 			status = accrual.Status
