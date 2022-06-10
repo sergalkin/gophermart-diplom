@@ -23,14 +23,21 @@ func NewAPIRoutes(e *gin.Engine, s storage.Storage) *apiRoutes {
 
 func (a *apiRoutes) Setup() {
 
-	api := a.engine.Group("/api", middleware.JSONConcern())
+	api := a.engine.Group("/api")
 	{
-		users := api.Group("/user")
+		user := api.Group("/user")
 		{
 			auth := handlers.NewAuthHandler(service.NewAuthService(a.storage))
 
-			users.POST("/register", auth.Register())
-			users.POST("/login", auth.Login())
+			user.POST("/register", auth.Register(), middleware.JSONConcern())
+			user.POST("/login", auth.Login(), middleware.JSONConcern())
+
+			orders := user.Group("/orders", middleware.AuthConcern())
+			{
+				ordersHandler := handlers.NewOrdersHandler(service.NewOrdersService(a.storage))
+				orders.POST("/", ordersHandler.Post(), middleware.TextPlainConcern())
+				orders.GET("/", ordersHandler.Get())
+			}
 		}
 	}
 }

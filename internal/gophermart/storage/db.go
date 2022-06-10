@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -21,8 +22,10 @@ var (
 )
 
 const (
-	createUser = `INSERT INTO public.users ("name", "password") VALUES ($1,$2)`
-	getUser    = `SELECT * from public.users where "name" = $1`
+	createUser  = `INSERT INTO public.users ("name", "password") VALUES ($1,$2)`
+	getUser     = `SELECT * from public.users where "name" = $1`
+	createOrder = `INSERT INTO public.orders ("order","name","uploaded_at") VALUES ($1,$2,$3)`
+	getOrders   = `SELECT "order", "status", "accrual", "uploaded_at" from public.orders where "name" = $1 ORDER BY "uploaded_at" DESC`
 )
 
 type database struct {
@@ -75,4 +78,32 @@ func (d *database) GetUserByName(l string) (models.User, error) {
 	}
 
 	return user, nil
+}
+
+func (d *database) CreateOrder(l, order string) error {
+	_, err := d.conn.Exec(context.Background(), createOrder, order, l, time.Now())
+
+	return err
+}
+
+func (d *database) GetOrders(login string) ([]models.Order, error) {
+	orders := make([]models.Order, 0)
+	rows, err := d.conn.Query(context.Background(), getOrders, login)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		order := models.Order{}
+
+		err = rows.Scan(&order.Number, &order.Status, &order.Accrual, &order.Upload)
+		if err != nil {
+			return nil, err
+		}
+
+		orders = append(orders, order)
+	}
+
+	return orders, nil
 }

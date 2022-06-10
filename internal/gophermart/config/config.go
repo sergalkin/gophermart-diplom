@@ -12,7 +12,7 @@ import (
 type config struct {
 	ServerAddress  string `env:"RUN_ADDRESS" envDefault:"127.0.0.1:8081"`
 	AccrualAddress string `env:"ACCRUAL_SYSTEM_ADDRESS" envDefault:"http://127.0.0.1:8080"`
-	DatabaseDSN    string `env:"DATABASE_URI" envDefault:"postgres://postgres:passwords4@localhost:5432/gophermart?sslmode=disable"`
+	DatabaseDSN    string `env:"DATABASE_URI" envDefault:"postgres://postgres:Ky-kiske01994@localhost:5432/gophermart?sslmode=disable"`
 
 	Logger *zap.Logger
 

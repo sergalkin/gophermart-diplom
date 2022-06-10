@@ -10,9 +10,13 @@ import (
 )
 
 var (
-	ErrUserAlreadyExists     = errors.New("user already exists")
-	ErrUserNotFound          = errors.New("user not found")
-	ErrUserPasswordMissMatch = errors.New("wrong username or password")
+	ErrUserAlreadyExists              = errors.New("user already exists")
+	ErrUserNotFound                   = errors.New("user not found")
+	ErrUserPasswordMissMatch          = errors.New("wrong username or password")
+	ErrLuhnValidation                 = errors.New("invalid order number")
+	ErrOrderAlreadyCreatedByOtherUser = errors.New("order already created by another user")
+	ErrOrderUniqueViolation           = errors.New("order already created")
+	ErrOrdersNotFound                 = errors.New("orders not found")
 )
 
 type responseError struct {

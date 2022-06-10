@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 
 	"github.com/sergalkin/gophermart-diplom/internal/gophermart/config"
@@ -48,7 +49,7 @@ func setupLogging() error {
 }
 
 func loadGlobalMiddlewares(e *gin.Engine) {
-	//todo gzip
+	e.Use(gzip.Gzip(gzip.DefaultCompression))
 }
 
 func loadRoutes(e *gin.Engine, s storage.Storage) {
