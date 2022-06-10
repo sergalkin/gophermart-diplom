@@ -25,3 +25,9 @@ type Withdraw struct {
 	Processed time.Time `json:"processed_at"`
 	Withdraw  float32   `json:"sum"`
 }
+
+type Accrual struct {
+	Order  string  `json:"order"`
+	Status string  `json:"status"`
+	Value  float32 `json:"accrual,omitempty"`
+}

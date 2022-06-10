@@ -11,6 +11,7 @@ type Storage interface {
 	Withdraw(sum float32, login, order string) error
 	UpdateBalance(login string, accrual float32) error
 	GetWithdrawals(login string) ([]models.Withdraw, error)
+	UpdateOrder(accrual float32, order, status string) error
 }
 
 func NewStorage() Storage {

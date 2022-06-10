@@ -32,6 +32,7 @@ const (
 	updateBalance     = `UPDATE public.balance SET balance=$1, withdraw=$2 WHERE "name" = $3`
 	createUserBalance = `INSERT INTO public.balance ("name") VALUES ($1)`
 	getWithdrawals    = `SELECT "order", "withdraw", "processed_at" FROM public.withdrawals WHERE "name" = $1 ORDER BY "processed_at" DESC`
+	updateOrder       = `UPDATE public.orders SET status=$1, accrual=$2 WHERE "order" = $3`
 )
 
 type database struct {
@@ -189,4 +190,12 @@ func (d *database) GetWithdrawals(l string) ([]models.Withdraw, error) {
 	}
 
 	return withdrawals, nil
+}
+
+func (d *database) UpdateOrder(accrual float32, order, status string) error {
+	if _, err := d.conn.Exec(context.Background(), updateOrder, status, accrual, order); err != nil {
+		return err
+	}
+
+	return nil
 }

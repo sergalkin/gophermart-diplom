@@ -15,6 +15,8 @@ import (
 type Orders interface {
 	Create(login, order string) error
 	Get(login string) ([]models.Order, error)
+	Update(accrual float32, order, status string) error
+	UpdateBalance(login string, accrual float32) error
 }
 
 var _ Orders = (*ordersService)(nil)
@@ -60,4 +62,12 @@ func (o *ordersService) Get(login string) ([]models.Order, error) {
 	}
 
 	return orders, err
+}
+
+func (o *ordersService) Update(accrual float32, order, status string) error {
+	return o.storage.UpdateOrder(accrual, order, status)
+}
+
+func (o *ordersService) UpdateBalance(login string, accrual float32) error {
+	return o.storage.UpdateBalance(login, accrual)
 }
