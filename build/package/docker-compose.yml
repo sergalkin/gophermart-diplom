@@ -1,0 +1,34 @@
+version: '3.9'
+
+volumes:
+  pgsql:
+    driver: local
+
+networks:
+  backend:
+    name: ${CONTAINER_NAME}_backend
+    driver: 'bridge'
+
+services:
+  pgsql:
+    stop_grace_period: 30s
+    build:
+      context: ./pgsql
+      args:
+        - POSTGRES_VERSION=${POSTGRES_VERSION}
+    container_name: ${CONTAINER_NAME}_postgres
+    image: ${CONTAINER_NAME}_postgres
+    environment:
+      TZ: ${TIMEZONE}
+      PGTZ: ${TIMEZONE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./.data/pgsql:/var/lib/postgresql/data/
+    ports:
+      - ${DB_PORT}:5432
+    networks:
+      - backend
+    restart: unless-stopped
