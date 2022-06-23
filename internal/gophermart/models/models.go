@@ -31,3 +31,8 @@ type Accrual struct {
 	Status string  `json:"status"`
 	Value  float32 `json:"accrual,omitempty"`
 }
+
+type OrderToProcess struct {
+	Login string
+	Order string
+}

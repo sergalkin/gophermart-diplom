@@ -9,6 +9,7 @@ import (
 
 	"github.com/sergalkin/gophermart-diplom/internal/gophermart/config"
 	"github.com/sergalkin/gophermart-diplom/internal/gophermart/routes"
+	"github.com/sergalkin/gophermart-diplom/internal/gophermart/service"
 	"github.com/sergalkin/gophermart-diplom/internal/gophermart/storage"
 )
 
@@ -22,6 +23,8 @@ func NewServer() error {
 
 	loadGlobalMiddlewares(e)
 	loadRoutes(e, storage.NewStorage())
+	service.InitAccrualService(storage.NewStorage())
+	go service.CalcAccrual()
 
 	if err := e.Run(config.ServerAddress()); err != nil {
 		return fmt.Errorf("error in starting gin server %w", err)
