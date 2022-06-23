@@ -29,11 +29,8 @@ func InitAccrualService(s storage.Storage) {
 }
 
 func CalcAccrual() {
-	for {
-		select {
-		case data := <-AccrualCh:
-			go accrual(data.Login, data.Order)
-		}
+	for data := range AccrualCh {
+		go accrual(data.Login, data.Order)
 	}
 }
 
